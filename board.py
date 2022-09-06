@@ -176,6 +176,7 @@ class Board:
             'next': list(map(lambda x: x.type, self.get_next())),
             'score': self.score,
             'block': self.current_block.type,
+            'shape': self.current_block.shape,
             'pos': self.current_block_pos
         }
 
