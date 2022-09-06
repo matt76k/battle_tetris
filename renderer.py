@@ -22,7 +22,7 @@ def init_colors():
     curses.init_pair(7, curses.COLOR_BLACK, 54) #紫
 
 class RenderBoard:
-    def __init__(self, game_board):
+    def __init__(self, game_board, player2 = False):
         self.game_board = game_board
         self.game_window_width = 2 * game_board.width + 2
         self.game_window_height = game_board.height + 2
@@ -30,13 +30,15 @@ class RenderBoard:
         self.status_window_width = 2 * (3 + 2)
         self.status_window_height = 5 + 4 + 4 + 2
 
+        self.player2 = player2
+
         self.game_window = self.__init_game_window()
         self.status_window = self.__init_status_window()
         self.draw_game_window()
         self.draw_status_window()
 
     def __init_game_window(self):
-        window = curses.newwin(self.game_window_height, self.game_window_width, TOP_MARGIN, LEFT_MARGIN)
+        window = curses.newwin(self.game_window_height, self.game_window_width, TOP_MARGIN, LEFT_MARGIN if not self.player2 else LEFT_MARGIN + self.game_window_width+ self.status_window_width + 5)
         window.nodelay(True)
         window.keypad(1)
 
@@ -44,7 +46,7 @@ class RenderBoard:
 
 
     def __init_status_window(self):
-        window = curses.newwin(self.status_window_height, self.status_window_width, TOP_MARGIN, self.game_window_width + 5)
+        window = curses.newwin(self.status_window_height, self.status_window_width, TOP_MARGIN, self.game_window_width + 5 if not self.player2 else LEFT_MARGIN + 2 * self.game_window_width+ self.status_window_width + 5 + 2)
         return window
 
     def draw_game_window(self):
@@ -67,10 +69,8 @@ class RenderBoard:
 
         if self.game_board.is_game_over():
             go_title = " Game Over "
-            ag_title = " Enter - play again "
 
-            self.game_window.addstr(int(self.game_window_hight *.4), (self.game_window_width - len(go_title))//2, go_title, curses.color_pair(95))
-            self.gmae_window.addstr(int(self.game_window_hight *.5), (self.game_window_width - len(ag_title))//2, ag_title, curses.color_pair(95))
+            self.game_window.addstr(int(self.game_window_height *.4), (self.game_window_width - len(go_title))//2, go_title, curses.color_pair(95))
 
         self.game_window.addstr(0, 0, f"Score: {self.game_board.score}")
 
