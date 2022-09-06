@@ -14,7 +14,7 @@ async def main():
 
             e = message['event']
             if e == 'act':
-                await ws.send(json.dumps({'event': 'act', 'act': player.act(message['info'])}))
+                await ws.send(json.dumps({'event': 'act', 'act': player.act(json.loads(message['info']))}))
                 time.sleep(0.01)
             elif e == 'gameover':
                 print(f"score = {json.loads(message['info'])[0]['score']}")
