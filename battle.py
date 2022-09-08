@@ -55,6 +55,7 @@ async def handler(ws):
 
         elif e == 'act':
             player['board'].act(ACTIONS.index(message['act']))
+
             info = json.dumps(await make_info(ws))
 
             if player['board'].is_game_over():
@@ -68,6 +69,13 @@ async def handler(ws):
             if player['score'] != player['board'].score:
                 player['viewer'].draw_status_window()
                 player['score'] = player['board'].score
+            
+            penalty = [0, 0, 0, 1, 3][player['board'].num_burn]
+
+            if penalty != 0:
+                opponent = players[list((o for o in players.keys() if o != ws))[0]]
+                opponent['board'].add_penalty_minos(penalty)
+            player['board'].num_burn = 0
 
             await ws.send(json.dumps({'event': 'act', 'info': info}))
 

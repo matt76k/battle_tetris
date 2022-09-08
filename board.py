@@ -44,6 +44,7 @@ class Board:
 
         self.game_over = False
         self.score = 0
+        self.num_burn = 0
 
         self._minos = []
 
@@ -152,6 +153,7 @@ class Board:
                     self.board[r] = self.board[r - 1]
                 self.board[0] = [0 for _ in range(self.width)]
                 self.score += 100
+                self.num_burn += 1
 
     def _check_overlapping(self, pos, shape):
         size = Block.get_size(shape)
