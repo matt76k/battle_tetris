@@ -1,4 +1,5 @@
 import random
+import time
 ACTIONS = ['nop', 'rotate', 'down', 'left', 'right', 'drop']
 
 class Player:
@@ -16,6 +17,5 @@ class Player:
             shape: 現在操作しているブロックの形状 (2次元リスト)
             pos: 現在操作しているブロックの位置
         """
-
+        time.sleep(1) # 本来は必要なし。デバッグ用
         return random.choice(ACTIONS)
-
