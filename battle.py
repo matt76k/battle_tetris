@@ -15,7 +15,7 @@ async def join(ws, name):
     global num_players, lock, start
     async with lock:
         num_players += 1
-    board = Board()
+    board = Board(seed=42)
     viewer = RenderBoard(board, player2=True if num_players == 2 else False)
     players[ws] = {'name': name, 'board': board, 'viewer': viewer, 'score': 0}
     async with start:
@@ -73,9 +73,17 @@ async def handler(ws):
             penalty = [0, 0, 0, 1, 3][player['board'].num_burn]
 
             if penalty != 0:
-                opponent = players[list((o for o in players.keys() if o != ws))[0]]
+                opponent_ws = list((o for o in players.keys() if o != ws))[0]
+                opponent = players[opponent_ws]
                 opponent['board'].add_penalty_minos(penalty)
+                if opponent['board'].is_game_over():
+                    opponent['score'] = player['board'].score
+                    opponent['viewer'].draw_game_window()
+                    opponent_ws.send(json.dumps({'event': 'gameover', 'info': json.dumps(await make_info(opponent_ws))}))
+
             player['board'].num_burn = 0
+
+
 
             await ws.send(json.dumps({'event': 'act', 'info': info}))
 
