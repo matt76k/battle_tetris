@@ -4,7 +4,12 @@ from renderer import RenderBoard, init_colors
 import asyncio
 import websockets
 import json
-import time
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--host', type=str, nargs='+', default='localhost')
+parser.add_argument('--port', nargs='+', type=int, default=8765)
+args = parser.parse_args()
 
 players = {}
 board = None
@@ -60,12 +65,10 @@ def reset():
     old_score = 0
 
 async def main():
-    async with websockets.serve(handler, "localhost", 8765):
+    async with websockets.serve(handler, args.host, args.port):
         await asyncio.Future()
 
 if __name__ == "__main__":
-    import warnings
-    warnings.filterwarnings('ignore')
     init_render()
     reset()
 

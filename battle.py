@@ -4,18 +4,25 @@ from renderer import RenderBoard, init_colors
 import asyncio
 import websockets
 import json
-import time
+import random
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--host', type=str, nargs='+', default='localhost')
+parser.add_argument('--port', nargs='+', type=int, default=8765)
+args = parser.parse_args()
 
 players = {}
 num_players = 0
 start = asyncio.Condition()
 lock = asyncio.Lock()
+seed = random.randint(0, 1000)
 
 async def join(ws, name):
     global num_players, lock, start
     async with lock:
         num_players += 1
-    board = Board(seed=42)
+    board = Board(seed=seed)
     viewer = RenderBoard(board, player2=True if num_players == 2 else False)
     players[ws] = {'name': name, 'board': board, 'viewer': viewer, 'score': 0}
     async with start:
@@ -97,12 +104,10 @@ def init_render():
     init_colors()
 
 async def main():
-    async with websockets.serve(handler, "localhost", 8765):
+    async with websockets.serve(handler, args.host, args.port):
         await asyncio.Future()
 
 if __name__ == "__main__":
-    import warnings
-    warnings.filterwarnings('ignore')
     init_render()
 
     try:
