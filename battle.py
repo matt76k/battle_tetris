@@ -6,9 +6,10 @@ import websockets
 import json
 import random
 import argparse
+import socket
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--host', type=str, nargs='+', default='localhost')
+parser.add_argument('--host', type=str, nargs='+', default=socket.gethostname())
 parser.add_argument('--port', nargs='+', type=int, default=8765)
 args = parser.parse_args()
 
