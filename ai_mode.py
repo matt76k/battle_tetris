@@ -8,8 +8,8 @@ import argparse
 import socket
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--host', type=str, nargs='+', default=socket.gethostname())
-parser.add_argument('--port', nargs='+', type=int, default=8765)
+parser.add_argument('--host', type=str, default=socket.gethostname())
+parser.add_argument('--port', type=int, default=8765)
 args = parser.parse_args()
 
 players = {}
