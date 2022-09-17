@@ -47,7 +47,7 @@ async def make_info(ws):
     return [board1, board2]
     
 
-async def handler(ws):
+async def handler(ws, port):
     global players
 
     async for message in ws:
@@ -109,9 +109,12 @@ async def main():
         await asyncio.Future()
 
 if __name__ == "__main__":
+    import warnings
+    warnings.filterwarnings('ignore')
     init_render()
 
     try:
-        asyncio.run(main())
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(main())
     except KeyboardInterrupt:
         curses.endwin()

@@ -20,7 +20,7 @@ old_score = 0
 async def join(ws, name):
     players[name] = ws
 
-async def handler(ws):
+async def handler(ws, port):
     global old_score
 
     async for message in ws:
@@ -70,10 +70,13 @@ async def main():
         await asyncio.Future()
 
 if __name__ == "__main__":
+    import warnings
+    warnings.filterwarnings('ignore')
     init_render()
     reset()
 
     try:
-        asyncio.run(main())
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(main())
     except KeyboardInterrupt:
         curses.endwin()

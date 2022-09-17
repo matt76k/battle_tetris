@@ -25,4 +25,8 @@ async def main():
                 print(f"score = {json.loads(message['info'])[0]['score']}")
                 break
 
-asyncio.run(main())
+import warnings
+warnings.filterwarnings('ignore')
+
+loop = asyncio.get_event_loop()
+loop.run_until_complete(main())
