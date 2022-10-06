@@ -50,6 +50,7 @@ async def main():
                 break
 
 try:
-    asyncio.run(main())
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(main())
 except KeyboardInterrupt:
     curses.endwin()
