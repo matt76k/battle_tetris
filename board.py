@@ -51,9 +51,6 @@ class Board:
         self._minos += self._gen_minos()
         self._minos += self._gen_minos()
 
-        self.current_block = self._minos.pop(0)
-        self.current_block_pos = None
-
         self._place_new_block()
 
     def is_game_over(self):
