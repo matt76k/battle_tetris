@@ -13,7 +13,7 @@ tetris.pyを実行して、ゲームをやってみましょう。
 
 [実行環境](https://shell.cloud.google.com/)だと
 ```shell
-export TERM='xterm-256color
+export TERM='xterm-256color'
 ```
 というコマンドを打たないと実行できないかもしれません。
 
@@ -45,13 +45,13 @@ export TERM='xterm-256color
 最初にサーバを起動します。
 
 ```shell
-python ai_mode.py
+python3 ai_mode.py
 ```
 
 その次に、別のターミナルでAIを動かします。
 
 ```shell
-python client.py
+python3 client.py
 ```
 
 ゲームオーバーになるとAIの方は終わります。
