@@ -10,6 +10,7 @@ import socket
 parser = argparse.ArgumentParser()
 parser.add_argument('--host', type=str, default=socket.gethostname())
 parser.add_argument('--port', type=int, default=8765)
+parser.add_argument('--nodisplay', action='store_false')
 args = parser.parse_args()
 
 players = {}
@@ -40,11 +41,13 @@ async def handler(ws, port):
             if board.is_game_over():
                 await ws.send(json.dumps({'event': 'gameover', 'info': info}))
                 reset()
-        
-            viewer.draw_game_window()
+
+            if args.nodisplay:
+                viewer.draw_game_window()
 
             if old_score != board.score:
-                viewer.draw_status_window()
+                if args.nodisplay:
+                    viewer.draw_status_window()
                 old_score = board.score
 
             info = json.dumps([board.__dict__])
@@ -62,7 +65,8 @@ def init_render():
 def reset():
     global board, viewer, old_score
     board = Board()
-    viewer = RenderBoard(board)
+    if args.nodisplay:
+        viewer = RenderBoard(board)
     old_score = 0
 
 async def main():
@@ -72,7 +76,8 @@ async def main():
 if __name__ == "__main__":
     import warnings
     warnings.filterwarnings('ignore')
-    init_render()
+    if args.nodisplay:
+        init_render()
     reset()
 
     try:
