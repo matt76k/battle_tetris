@@ -30,6 +30,7 @@ async def handler(ws, port):
         e = message['event']
 
         if e == 'join':
+            reset()
             await join(ws, message['name'])
             info = json.dumps([board.__dict__])
             await ws.send(json.dumps({'event': 'act', 'info': info}))
@@ -78,7 +79,6 @@ if __name__ == "__main__":
     warnings.filterwarnings('ignore')
     if args.nodisplay:
         init_render()
-    reset()
 
     try:
         loop = asyncio.get_event_loop()
