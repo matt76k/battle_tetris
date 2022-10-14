@@ -3,8 +3,6 @@ import websockets
 import json
 import argparse
 import socket
-from concurrent.futures import ThreadPoolExecutor
-import os
 import importlib
 
 parser = argparse.ArgumentParser()
@@ -15,8 +13,6 @@ parser.add_argument('--player', type=str, default="Bot")
 
 args = parser.parse_args()
 player = getattr(importlib.import_module(f"{args.player}.Player"), "Player")(args.player)
-
-executor = ThreadPoolExecutor(max_workers=1)
 
 score = 0
 
@@ -33,15 +29,10 @@ async def play():
             info = json.loads(message['info'])
             score = info[0]['score']
 
-            try:
-                result = await asyncio.wait_for(loop.run_in_executor(executor, player.act, info), timeout=args.timeout)
-            except:
-                e = 'gameover'
-
             if e == 'act':
+                result = player.act(info)
                 await ws.send(json.dumps({'event': 'act', 'act': result}))
             elif e == 'gameover':
-                print(f"score = {score}", flush=True)
                 break
 
 if __name__ == "__main__":
@@ -49,7 +40,9 @@ if __name__ == "__main__":
     asyncio.set_event_loop(loop)
 
     try:
-        loop.run_until_complete(play())
+        loop.run_until_complete(asyncio.wait_for(play(), args.timeout))
+    except:
+        pass
     finally:
+        print(f"score = {score}", flush=True)
         loop.close()
-        os._exit(0)
