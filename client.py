@@ -1,20 +1,21 @@
 import asyncio
 import websockets
 import json
-import time
-from Bot.Player import Player
 import argparse
 import socket
 from concurrent.futures import ThreadPoolExecutor
 import os
+import importlib
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--host', type=str, default=socket.gethostname())
 parser.add_argument('--port', type=int, default=8765)
 parser.add_argument('--timeout', type=int, default=60*10)
+parser.add_argument('--player', type=str, default="Bot")
 
 args = parser.parse_args()
-player = Player('bot')
+player = getattr(importlib.import_module(f"{args.player}.Player"), "Player")(args.player)
+
 executor = ThreadPoolExecutor(max_workers=1)
 
 score = 0
