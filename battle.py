@@ -11,6 +11,8 @@ import socket
 parser = argparse.ArgumentParser()
 parser.add_argument('--host', type=str, default=socket.gethostname())
 parser.add_argument('--port', type=int, default=8765)
+parser.add_argument('--timeout', type=int, default=10000)
+parser.add_argument('--nodisplay', action='store_false')
 args = parser.parse_args()
 
 players = {}
@@ -24,7 +26,10 @@ async def join(ws, name):
     async with lock:
         num_players += 1
     board = Board(seed=seed)
-    viewer = RenderBoard(board, player2=True if num_players == 2 else False)
+    if args.nodisplay:
+        viewer = RenderBoard(board, player2=True if num_players == 2 else False)
+    else:
+        viewer = None
     players[ws] = {'name': name, 'board': board, 'viewer': viewer, 'score': 0}
     async with start:
         if num_players == 2:
@@ -48,7 +53,7 @@ async def make_info(ws):
     
 
 async def handler(ws, port):
-    global players
+    global players, num_players
 
     async for message in ws:
         message = json.loads(message)
@@ -68,30 +73,34 @@ async def handler(ws, port):
 
             if player['board'].is_game_over():
                 player['score'] = player['board'].score
-                player['viewer'].draw_game_window()
+                if args.nodisplay:
+                    player['viewer'].draw_game_window()
                 await ws.send(json.dumps({'event': 'gameover', 'info': json.dumps(await make_info(ws))}))
+                num_players -= 1
                 return 
 
-            player['viewer'].draw_game_window()
+            if args.nodisplay:
+                player['viewer'].draw_game_window()
 
             if player['score'] != player['board'].score:
-                player['viewer'].draw_status_window()
+                if args.nodisplay:
+                    player['viewer'].draw_status_window()
                 player['score'] = player['board'].score
             
             penalty = [0, 0, 0, 1, 3][player['board'].num_burn]
 
-            if penalty != 0:
+            if (num_players == 2) and (penalty != 0):
                 opponent_ws = list((o for o in players.keys() if o != ws))[0]
                 opponent = players[opponent_ws]
                 opponent['board'].add_penalty_minos(penalty)
                 if opponent['board'].is_game_over():
                     opponent['score'] = player['board'].score
-                    opponent['viewer'].draw_game_window()
-                    opponent_ws.send(json.dumps({'event': 'gameover', 'info': json.dumps(await make_info(opponent_ws))}))
+                    if args.nodisplay:
+                        opponent['viewer'].draw_game_window()
+                    await opponent_ws.send(json.dumps({'event': 'gameover', 'info': json.dumps(await make_info(opponent_ws))}))
+                    num_players -= 1
 
             player['board'].num_burn = 0
-
-
 
             await ws.send(json.dumps({'event': 'act', 'info': info}))
 
@@ -109,12 +118,20 @@ async def main():
         await asyncio.Future()
 
 if __name__ == "__main__":
-    import warnings
-    warnings.filterwarnings('ignore')
-    init_render()
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+
+    if args.nodisplay:
+        init_render()
 
     try:
-        loop = asyncio.get_event_loop()
-        loop.run_until_complete(main())
-    except KeyboardInterrupt:
-        curses.endwin()
+        loop.run_until_complete(asyncio.wait_for(main(), args.timeout))
+    except:
+        if args.nodisplay:
+            curses.endwin()
+    finally:
+
+        p1 = list(players.values())[0]
+        p2 = list(players.values())[1]
+        loop.close()
+        print(f"{p1['name']}:{p2['name']} = {p1['score']}:{p2['score']}", flush=True)
